@@ -133,11 +133,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Calibration.cpp" />
+    <ClCompile Include="ExtrinsicCalibration.cpp" />
+    <ClCompile Include="IntrinsicCalibration.cpp" />
     <ClCompile Include="Cameras.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Preview.cpp" />
+    <ClCompile Include="UndistortionRectification.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calibration.h" />
+    <ClInclude Include="ExtrinsicCalibration.h" />
+    <ClInclude Include="IntrinsicCalibration.h" />
     <ClInclude Include="Cameras.h" />
+    <ClInclude Include="Preview.h" />
+    <ClInclude Include="UndistortionRectification.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="read_images.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

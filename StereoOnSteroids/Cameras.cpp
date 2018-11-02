@@ -1,9 +1,7 @@
 #include "Cameras.h"
 
-Cameras::Cameras(Resolution camResolution_, Resolution imResolution_, int numOfCameras_, int beginIndex_) 
-	: camResolution{ camResolution_ }
-	, imResolution{ imResolution_ }
-	, beginIndex{ beginIndex_ }
+Cameras::Cameras(int numOfCameras_, int resizeRate_, int beginIndex_) 
+	: resizeRate{ resizeRate_ }, beginIndex{ beginIndex_ }
 {
 	for (auto i = beginIndex; i < beginIndex + numOfCameras_; i++)
 	{
@@ -13,15 +11,6 @@ Cameras::Cameras(Resolution camResolution_, Resolution imResolution_, int numOfC
 			logger::fatal("something went wrong\n");
 			return;
 		}
-		cam.set(cv::CAP_PROP_FRAME_WIDTH, camResolution.width);
-		cam.set(cv::CAP_PROP_FRAME_HEIGHT, camResolution.height);
-		int h = cam.get(cv::CAP_PROP_FRAME_HEIGHT);
-		int w = cam.get(cv::CAP_PROP_FRAME_WIDTH);
-		if (h != 720 || w != 1280)
-		{
-			logger::fatal("unable to set 1280*720\n");
-			return;
-		}
 		cameras.push_back(cam);
 		camFrames.push_back(cv::Mat());
 		imFrames.push_back(cv::Mat());
@@ -29,8 +18,7 @@ Cameras::Cameras(Resolution camResolution_, Resolution imResolution_, int numOfC
 }
 
 Cameras::~Cameras()
-{
-}
+{}
 
 void Cameras::capture()
 {
@@ -41,7 +29,8 @@ void Cameras::capture()
 void Cameras::resize()
 {
 	for (auto i = 0; i < cameras.size(); i++)
-		cv::resize(camFrames[i], imFrames[i], cv::Size(imResolution.width, imResolution.height));
+		//imFrames[i] = camFrames[i];
+		cv::resize(camFrames[i], imFrames[i], cv::Size(camFrames[i].cols, camFrames[i].rows));
 }
 
 std::vector <cv::Mat> Cameras::getFrames()
