@@ -44,6 +44,6 @@ int main(int argc, char const *argv[])
 
         cout << "#";
     }
-    cout << "]\n";
+    cout << "]\n Images saved in " << imPath << "\n";
     return 0;
 }

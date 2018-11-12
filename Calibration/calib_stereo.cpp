@@ -18,8 +18,8 @@ void load_image_points(int board_width,
 {
 
     Size board_size = Size(board_width, board_height);
-    int board_n = board_width * board_height;
 
+    cout << " Found corners [";
     for (int i = 0; i < num_imgs; i++)
     {
 
@@ -38,38 +38,35 @@ void load_image_points(int board_width,
 
         if(!found1 || !found2)
         {
-            cout << "Chessboard find error!" << endl;
+            cout << " ";
             continue;
         } 
 
-        if (found1)
-        {
-            cv::cornerSubPix(gray1, corners1, cv::Size(5, 5), cv::Size(-1, -1),
-    cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
-            cv::drawChessboardCorners(gray1, board_size, corners1, found1);
-        }
-        if (found2)
-        {
-            cv::cornerSubPix(gray2, corners2, cv::Size(5, 5), cv::Size(-1, -1),
-    cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
-            cv::drawChessboardCorners(gray2, board_size, corners2, found2);
-        }
+        cv::cornerSubPix(gray1, corners1, cv::Size(5, 5), cv::Size(-1, -1),
+                cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+        cv::drawChessboardCorners(gray1, board_size, corners1, found1);
+
+        cv::cornerSubPix(gray2, corners2, cv::Size(5, 5), cv::Size(-1, -1),
+                cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+        cv::drawChessboardCorners(gray2, board_size, corners2, found2);
+
 
         vector< Point3f > obj;
         for (int i = 0; i < board_height; i++)
             for (int j = 0; j < board_width; j++)
                 obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
 
-        if (found1 && found2) {
-            cout << i << ". Found corners!" << endl;
-            imagePoints1.push_back(corners1);
-            imagePoints2.push_back(corners2);
-            objectPoints.push_back(obj);
-        }
+        cout << "#";
+        imagePoints1.push_back(corners1);
+        imagePoints2.push_back(corners2);
+        objectPoints.push_back(obj);
     }
-    for (int i = 0; i < imagePoints1.size(); i++) {
+    cout << "]\n";
+    for (int i = 0; i < imagePoints1.size(); i++)
+    {
         vector< Point2f > v1, v2;
-        for (int j = 0; j < imagePoints1[i].size(); j++) {
+        for (int j = 0; j < imagePoints1[i].size(); j++)
+        {
             v1.push_back(Point2f((double)imagePoints1[i][j].x, (double)imagePoints1[i][j].y));
             v2.push_back(Point2f((double)imagePoints2[i][j].x, (double)imagePoints2[i][j].y));
         }
@@ -93,7 +90,7 @@ int main(int argc, char const *argv[])
                         nameL,
                         nameR);
 
-    printf("Starting stereo calibration\n");
+    printf(" Starting stereo calibration\n");
     Mat K1, K2, R, F, E;
     Vec3d T;
     Mat D1, D2;
@@ -104,7 +101,7 @@ int main(int argc, char const *argv[])
     int flag = 0;
     flag |= CV_CALIB_FIX_INTRINSIC;
     
-    cout << "Read intrinsics" << endl;
+    cout << " Read intrinsics" << endl;
     
     stereoCalibrate(objectPoints, left_img_points, right_img_points, K1, D1, K2, D2, img1.size(), R, T, E, F);
 
@@ -118,9 +115,9 @@ int main(int argc, char const *argv[])
     fs1 << "E" << E;
     fs1 << "F" << F;
     
-    printf("Done Calibration\n");
+    printf(" Done Calibration\n");
 
-    printf("Starting Rectification\n");
+    printf(" Starting Rectification\n");
 
     cv::Mat R1, R2, P1, P2, Q;
     stereoRectify(K1, D1, K2, D2, img1.size(), R, T, R1, R2, P1, P2, Q);
@@ -131,7 +128,7 @@ int main(int argc, char const *argv[])
     fs1 << "P2" << P2;
     fs1 << "Q" << Q;
 
-    printf("Done Rectification\n");
+    printf(" Done Rectification\n");
 
     return 0;
 }

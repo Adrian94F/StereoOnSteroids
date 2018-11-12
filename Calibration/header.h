@@ -12,9 +12,15 @@ using namespace cv;
 int boardWidth = 9;
 int boardHeight = 9;
 float squareSize = 0.02423;
-int numOfImages = 29;
-
+int numOfImages = 30;
 string imPath = "../calib_imgs/0/";
+
+/*int boardWidth = 9;
+int boardHeight = 6;
+float squareSize = 0.02423;
+int numOfImages = 29;
+string imPath = "../calib_imgs/1/";*/
+
 string nameL = "left";
 string nameR = "right";
 string ext = ".jpg";
