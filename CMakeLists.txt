@@ -10,7 +10,7 @@ include_directories($(OpenCV_INCLUDE_DIRS))
 add_executable(calibrate calib_intrinsic.cpp)
 target_link_libraries(calibrate ${OpenCV_LIBS})
 
-add_executable(read read_images.cpp)
+add_executable(read read.cpp)
 target_link_libraries(read ${OpenCV_LIBS})
 
 add_executable(calibrate_stereo calib_stereo.cpp)

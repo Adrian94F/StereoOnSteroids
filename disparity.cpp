@@ -13,14 +13,12 @@ int test()
     double matching_time, filtering_time;
     Mat left, right, left_for_matcher, right_for_matcher, left_disp, right_disp, filtered_disp;
 
-    //left  = imread("../left.jpg", IMREAD_COLOR);
     left  = imread(imPath + nameL + to_string(i) + ".out" + ext, IMREAD_COLOR);
     if ( left.empty() )
     {
         cout << "Cannot read image file";
         return -1;
     }
-    //right = imread("../right.jpg", IMREAD_COLOR);
     right  = imread(imPath + nameR + to_string(i) + ".out" + ext, IMREAD_COLOR);
     if ( right.empty() )
     {
