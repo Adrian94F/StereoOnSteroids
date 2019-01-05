@@ -14,8 +14,8 @@ int main(int argc, char const *argv[])
         Vec3d T;
         Mat D1, D2;
 
-        Mat img1 = imread(imPath + nameL + to_string(i) + ext, CV_LOAD_IMAGE_COLOR);
-        Mat img2 = imread(imPath + nameR + to_string(i) + ext, CV_LOAD_IMAGE_COLOR);
+        Mat img1 = imread(imPath + nameL + to_string(i) + ext, IMREAD_COLOR);
+        Mat img2 = imread(imPath + nameR + to_string(i) + ext, IMREAD_COLOR);
 
         cv::FileStorage fs1(calibPath + calibFile, cv::FileStorage::READ);
         fs1["K1"] >> K1;

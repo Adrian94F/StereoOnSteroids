@@ -1,10 +1,8 @@
 #include "header.h"
 
-#include <opencv2/ximgproc/disparity_filter.hpp>
+#include <opencv2/ximgproc.hpp>
 
-using cv::ximgproc::createDisparityWLSFilter;
-using cv::ximgproc::createRightMatcher;
-using cv::ximgproc::getDisparityVis;
+using namespace cv::ximgproc;
 
 int test()
 {
@@ -53,10 +51,10 @@ int test()
     filtering_time = ((double)getTickCount() - filtering_time)/getTickFrequency();
 
     Mat raw_disp_vis;
-    getDisparityVis(left_disp, raw_disp_vis, vis_mult);
+    cv::ximgproc::getDisparityVis(left_disp, raw_disp_vis, vis_mult);
     namedWindow("raw disparity", WINDOW_AUTOSIZE);
     Mat filtered_disp_vis;
-    getDisparityVis(filtered_disp, filtered_disp_vis, vis_mult);
+    cv::ximgproc::getDisparityVis(filtered_disp, filtered_disp_vis, vis_mult);
     namedWindow("filtered disparity", WINDOW_AUTOSIZE);
     do
     {

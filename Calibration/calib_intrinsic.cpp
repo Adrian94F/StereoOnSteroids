@@ -16,16 +16,16 @@ void setupCalibration(string fileName)
 
     for (int k = 0; k < numOfImages; k++)
     {
-        img = imread(imPath + fileName + to_string(k) + ext, CV_LOAD_IMAGE_COLOR);
-        cv::cvtColor(img, gray, CV_BGR2GRAY);
+        img = imread(imPath + fileName + to_string(k) + ext, IMREAD_COLOR);
+        cv::cvtColor(img, gray, COLOR_BGR2GRAY);
 
         bool found = false;
         found = cv::findChessboardCorners(img, boardSize, corners,
-                                          CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+                                          CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FILTER_QUADS);
         if (found)
         {
             cornerSubPix(gray, corners, cv::Size(5, 5), cv::Size(-1, -1),
-                         TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+                         TermCriteria(/*CV_TERMCRIT_EPS | CV_TERMCRIT_ITER*/ 0, 30, 0.1));
             drawChessboardCorners(gray, boardSize, corners, found);
         }
 
@@ -66,7 +66,7 @@ double computeReprojectionErrors(const vector<vector<Point3f>>& objectPoints,
         projectPoints(Mat(objectPoints[i]), rvecs[i],
                       tvecs[i], cameraMatrix,
                       distCoeffs, imagePoints2);
-        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), CV_L2);
+        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), 4);
         int n = (int) objectPoints[i].size();
         perViewErrors[i] = (float) std::sqrt(err * err / n);
         totalErr += err * err;
@@ -85,8 +85,8 @@ void calibrate(string fileName)
     Mat D;
     vector<Mat> rvecs, tvecs;
     int flag = 0;
-    flag |= CV_CALIB_FIX_K4;
-    flag |= CV_CALIB_FIX_K5;
+    flag |= /*CV_CALIB_FIX_K4*/ 2048;
+    flag |= /*CV_CALIB_FIX_K5*/ 4096;
     calibrateCamera(objectPoints, imagePoints, img.size(), K, D, rvecs, tvecs, flag);
 
     cout << " Calibration error: " << computeReprojectionErrors(objectPoints, imagePoints, rvecs, tvecs, K, D) << endl;
