@@ -1,4 +1,4 @@
-#include "header.h"
+#include "header.hpp"
 
 bool checkCameras(VideoCapture c1, VideoCapture c2)
 {

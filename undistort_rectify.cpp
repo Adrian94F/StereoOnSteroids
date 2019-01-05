@@ -1,46 +1,30 @@
-#include "header.h"
+#include "header.hpp"
+#include "ImageCorrection.hpp"
 
 using namespace std;
 using namespace cv;
 
-
 int main(int argc, char const *argv[])
 {
+    ImageCorrection ic(calibPath + calibFile);
+    ImageCorrection::MatsPair mats;
+    string l0, r0, l1, r1;
     cout << "Processing images [";
     for (auto i = 0; i < numOfImages; i++)
     {
-        Mat R1, R2, P1, P2, Q;
-        Mat K1, K2, R;
-        Vec3d T;
-        Mat D1, D2;
+        l0 = l1 = r0 = r1 = "";
+        l0.append(imPath).append(nameL).append(to_string(i)).append(ext);
+        l1.append(imPath).append(nameL).append(to_string(i)).append(ext);
+        r0.append(imPath).append(nameR).append(to_string(i)).append(".out").append(ext);
+        r1.append(imPath).append(nameR).append(to_string(i)).append(".out").append(ext);
 
-        Mat img1 = imread(imPath + nameL + to_string(i) + ext, IMREAD_COLOR);
-        Mat img2 = imread(imPath + nameR + to_string(i) + ext, IMREAD_COLOR);
+        mats.left = imread(l0, IMREAD_COLOR);
+        mats.right = imread(r0, IMREAD_COLOR);
 
-        cv::FileStorage fs1(calibPath + calibFile, cv::FileStorage::READ);
-        fs1["K1"] >> K1;
-        fs1["K2"] >> K2;
-        fs1["D1"] >> D1;
-        fs1["D2"] >> D2;
-        fs1["R"] >> R;
-        fs1["T"] >> T;
+        ic.undistortRectify(mats);
 
-        fs1["R1"] >> R1;
-        fs1["R2"] >> R2;
-        fs1["P1"] >> P1;
-        fs1["P2"] >> P2;
-        fs1["Q"] >> Q;
-
-        cv::Mat lmapx, lmapy, rmapx, rmapy;
-        cv::Mat imgU1, imgU2;
-
-        cv::initUndistortRectifyMap(K1, D1, R1, P1, img1.size(), CV_32F, lmapx, lmapy);
-        cv::initUndistortRectifyMap(K2, D2, R2, P2, img2.size(), CV_32F, rmapx, rmapy);
-        cv::remap(img1, imgU1, lmapx, lmapy, cv::INTER_LINEAR);
-        cv::remap(img2, imgU2, rmapx, rmapy, cv::INTER_LINEAR);
-
-        imwrite(imPath + nameL + to_string(i) + ".out" + ext, imgU1);
-        imwrite(imPath + nameR + to_string(i) + ".out" + ext, imgU2);
+        imwrite(l1, mats.left);
+        imwrite(r1, mats.right);
 
         cout << "#";
     }

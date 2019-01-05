@@ -1,4 +1,4 @@
-#include "header.h"
+#include "header.hpp"
 
 #include <opencv2/ximgproc.hpp>
 
@@ -65,12 +65,14 @@ int test()
 
 void liveProcessing()
 {
+    // read cameras calibration data
+    
     do
     {
-        //capture frames
-        //undostort_rectify
-        //get disparity map
-        //view
+        // capture frames
+        // undostort_rectify
+        // get disparity map
+        // view
     } while(waitKey(30) != 27);
 }
 
