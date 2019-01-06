@@ -13,8 +13,8 @@ int boardWidth = 9;
 int boardHeight = 9;
 float squareSize = 0.02423;
 int numOfImages = 33;
-string imPath = "../calib_imgs/0/";
-//string imPath = "../calib_imgs/opencvdoc/";
+//string imPath = "../calib_imgs/0/";
+string imPath = "../calib_imgs/opencvdoc/";
 
 /*int boardWidth = 9;
 int boardHeight = 6;

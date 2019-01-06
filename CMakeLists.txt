@@ -19,5 +19,5 @@ target_link_libraries(calibrate_stereo ${OpenCV_LIBS})
 add_executable(undistort_rectify undistort_rectify.cpp ImageCorrection.cpp)
 target_link_libraries(undistort_rectify ${OpenCV_LIBS})
 
-add_executable(disparity disparity.cpp)
+add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp)
 target_link_libraries(disparity ${OpenCV_LIBS})
