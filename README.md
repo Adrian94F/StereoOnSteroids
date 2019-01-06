@@ -19,7 +19,6 @@ Output images with suffix "old" will appear.
 Generate disparity map by running `./disparity`. It creates disparity map of sample set of images from OpenCV documentation. After that it will use live image from cameras.
 
 ## TODO
-- Disparity map from live image generation
 - Speeding up by parallel calculations
   - CUDA?
   - multithreading?
@@ -29,6 +28,7 @@ Generate disparity map by running `./disparity`. It creates disparity map of sam
 - Collecting images from cameras
 - Calibration
 - Disparity map generation
+- Disparity map from live image generation
 
 ## Tips
 - on Manjaro Linux: build OpenCV with flag `CMAKE_EXE_LINKER_FLAGS=-lcblas` ([solution found here](https://unix.stackexchange.com/questions/417032/arch-linux-problems-building-opencv-with-cuda-libopencv-core-so-3-4-0-undefin)); added this flag to CMakeLists.txt

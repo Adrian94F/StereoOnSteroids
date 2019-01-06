@@ -2,6 +2,7 @@
 
 #include <opencv2/ximgproc.hpp>
 
+#include "Cameras.hpp"
 #include "DisparityMapCalculator.hpp"
 #include "ImageCorrection.hpp"
 
@@ -10,7 +11,7 @@ using namespace cv::ximgproc;
 int test()
 {
     DisparityMapCalculator dmc;
-
+    imPath = "../calib_imgs/opencvdoc/";
     Mat left  = imread(imPath + nameL + "0.out" + ext, IMREAD_COLOR);
     if ( left.empty() )
     {
@@ -23,7 +24,6 @@ int test()
         cout << "Cannot read image file";
         return -1;
     }
-
     namedWindow("raw disparity", WINDOW_AUTOSIZE);
     namedWindow("filtered disparity", WINDOW_AUTOSIZE);
     do
@@ -37,27 +37,25 @@ int test()
 
 void liveProcessing()
 {
-    // read cameras calibration data
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
+    Cameras cameras;
     DisparityMapCalculator dmc;
-
     do
     {
-        // capture frames
-        Mat left, right;
-        // undostort_rectify
+        mats.left = cameras.getLeft();
+        mats.right = cameras.getRight();
         ic.undistortRectify(mats);
-        // get disparity map
         Mat map = dmc.getMap(mats.left, mats.right);
-        // view
+        imshow("Cameras", cameras.getBoth());
+        imshow("Disparity", dmc.getMap(mats.left, mats.right));
     } while(waitKey(30) != 27);
 }
 
 int main(int argc, char const *argv[])
 {
-    if (test())
-        return 1;
+    /*if (test())
+        return 1;*/
     liveProcessing();
     return 0;
 }
