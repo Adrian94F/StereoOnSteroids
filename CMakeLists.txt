@@ -10,7 +10,7 @@ include_directories($(OpenCV_INCLUDE_DIRS))
 add_executable(calibrate calib_intrinsic.cpp)
 target_link_libraries(calibrate ${OpenCV_LIBS})
 
-add_executable(read read.cpp)
+add_executable(read read.cpp Cameras.cpp)
 target_link_libraries(read ${OpenCV_LIBS})
 
 add_executable(calibrate_stereo calib_stereo.cpp)
@@ -19,5 +19,5 @@ target_link_libraries(calibrate_stereo ${OpenCV_LIBS})
 add_executable(undistort_rectify undistort_rectify.cpp ImageCorrection.cpp)
 target_link_libraries(undistort_rectify ${OpenCV_LIBS})
 
-add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp)
+add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp Cameras.cpp)
 target_link_libraries(disparity ${OpenCV_LIBS})
