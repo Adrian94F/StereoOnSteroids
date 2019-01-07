@@ -9,7 +9,7 @@ and pressing any key. Press ESC key to exit.
 calibrate left and right camera separetly using
 `./calibrate`
 and calibrate camera system using
-`./calibrate-stereo'.
+`./calibrate-stereo`.
 Output files will generate: for each camera and set of cameras.
 
 Then remove distortion and rectify images using
