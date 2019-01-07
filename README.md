@@ -22,7 +22,7 @@ Generate disparity map by running `./disparity`. It creates disparity map of sam
 - Speeding up by parallel calculations
   - CUDA?
   - multithreading?
-  - nultiprocessing?
+  - multiprocessing?
 
 ## Done
 - Collecting images from cameras
