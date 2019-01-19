@@ -16,13 +16,15 @@ Then remove distortion and rectify images using
 `./undistort_rectify`.
 Output images with suffix "old" will appear.
 
-Generate disparity map by running `./disparity`. It creates disparity map of sample set of images from OpenCV documentation. After that it will use live image from cameras.
+Generate disparity map by running `./disparity`. It creates disparity map of live images from cameras and shows
+
+![](./doc/screen1.png "Example image")
 
 ## TODO
-- Speeding up by parallel calculations
-  - CUDA?
-  - multithreading?
-  - multiprocessing?
+- Timer
+- Parallel tasks manager
+  - multi threading?
+  - multi processing?
 
 ## Done
 - Collecting images from cameras

@@ -15,9 +15,9 @@ public:
     Mat getLeft();
     Mat getRight();
     Mat getBoth();
+    static Mat resizeAndConcat(Mat imL, Mat imR, int d=2);
 private:
     void checkCameras();
-    Mat resizeAndConcat(Mat imL, Mat imR, int d=2);
     VideoCapture capL;
     VideoCapture capR;
     int camL = 4;

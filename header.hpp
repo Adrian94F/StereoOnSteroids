@@ -10,16 +10,10 @@ using namespace std;
 using namespace cv;
 
 int boardWidth = 9;
-int boardHeight = 9;
-float squareSize = 0.02423;
-int numOfImages = 33;
-string imPath = "../calib_imgs/0/";
-
-/*int boardWidth = 9;
 int boardHeight = 6;
-float squareSize = 0.02423;
-int numOfImages = 29;
-string imPath = "../calib_imgs/0/";*/
+float squareSize = 0.0265;
+int numOfImages = 36;
+string imPath = "../calib_imgs/0/";
 
 string nameL = "left";
 string nameR = "right";

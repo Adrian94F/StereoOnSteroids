@@ -14,8 +14,8 @@ int main(int argc, char const *argv[])
     {
         l0 = l1 = r0 = r1 = "";
         l0.append(imPath).append(nameL).append(to_string(i)).append(ext);
-        l1.append(imPath).append(nameL).append(to_string(i)).append(ext);
-        r0.append(imPath).append(nameR).append(to_string(i)).append(".out").append(ext);
+        l1.append(imPath).append(nameL).append(to_string(i)).append(".out").append(ext);
+        r0.append(imPath).append(nameR).append(to_string(i)).append(ext);
         r1.append(imPath).append(nameR).append(to_string(i)).append(".out").append(ext);
 
         mats.left = imread(l0, IMREAD_COLOR);
