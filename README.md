@@ -18,7 +18,10 @@ Output images with suffix "old" will appear.
 
 Generate disparity map by running `./disparity`. It creates disparity map of live images from cameras and shows
 
-![](./doc/screen1.png "Example image")
+<p align="center">
+  <img src="./doc/screen1.png" width="500px")/>
+  <br/>Example images from cameras with generated disparity map.
+</p>
 
 ## TODO
 - Timer
