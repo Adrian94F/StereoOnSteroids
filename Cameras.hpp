@@ -20,7 +20,7 @@ private:
     void checkCameras();
     VideoCapture capL;
     VideoCapture capR;
-    int camL = 4;
+    int camL = 0;
     int camR = 2;
 };
 
