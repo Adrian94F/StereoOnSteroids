@@ -5,6 +5,7 @@
 #include "Cameras.hpp"
 #include "DisparityMapCalculator.hpp"
 #include "ImageCorrection.hpp"
+#include "TaskManager.hpp"
 #include "Timer.hpp"
 
 using namespace cv::ximgproc;
@@ -19,17 +20,17 @@ void liveProcessing()
     timer.reset();
     do
     {
-        timer.measure("[");
+        timer.measure(Timer::EMeasure::FRAME_BEGIN);
         mats.left = cameras.getLeft();
         mats.right = cameras.getRight();
-        timer.measure(" got images");
+        timer.measure(Timer::EMeasure::GOT_IMAGES);
         ic.undistortRectify(mats);
-        timer.measure(" undistorted");
+        timer.measure(Timer::EMeasure::UNDISTORTED);
         Mat map = dmc.getMap(mats.left, mats.right);
-        timer.measure(" got disparity map");
+        timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
         imshow("Cameras", Cameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", map);
-        timer.measure("]");
+        timer.measure(Timer::EMeasure::FRAME_END);
     } while(waitKey(30) != 27);
     timer.printLog();
 }
@@ -38,6 +39,8 @@ int main(int argc, char const *argv[])
 {
     /*if (test())
         return 1;*/
+    TaskManager tm;
+    tm.start(3);
     liveProcessing();
     return 0;
 }

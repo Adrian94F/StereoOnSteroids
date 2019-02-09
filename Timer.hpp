@@ -13,11 +13,20 @@ using namespace std;
 using namespace std::chrono;
 using hrc = high_resolution_clock;
 
-class Timer {
+class Timer
+        {
 public:
+    enum EMeasure
+    {
+        FRAME_BEGIN = 0,
+        GOT_IMAGES = 1,
+        UNDISTORTED = 2,
+        DISPARITY_MAP_GENERATED = 3,
+        FRAME_END = 4
+    };
     Timer() = default;
     explicit Timer(string name="");
-    void measure(string label="");
+    void measure(EMeasure m);
     void reset();
     void printLog();
 private:
@@ -25,7 +34,7 @@ private:
     string name_ = "";
     struct {
         hrc::time_point time;
-        string text;
+        EMeasure measure;
     } typedef timestamp;
     vector <timestamp> timestamps_;
     hrc::time_point startTime_;

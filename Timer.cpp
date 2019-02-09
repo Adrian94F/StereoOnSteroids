@@ -1,11 +1,13 @@
 #include "Timer.hpp"
 
+#include <set>
+
 Timer::Timer(string name): name_(move(name))
 {}
 
-void Timer::measure(string label)
+void Timer::measure(EMeasure m)
 {
-    timestamps_.push_back({ getTime(), move(label) });
+    timestamps_.push_back({ getTime(), m });
 }
 
 void Timer::reset()
@@ -26,6 +28,6 @@ void Timer::printLog()
     for (const auto& ts : timestamps_)
     {
         duration<double> timeSpan = duration_cast<duration<double>>(ts.time - startTime_);
-        cout << timeSpan.count() << ": " << ts.text << endl;
+        cout << timeSpan.count() << ": " << ts.measure << endl;
     }
 }
