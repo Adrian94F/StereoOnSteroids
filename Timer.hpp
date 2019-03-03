@@ -36,7 +36,7 @@ private:
         hrc::time_point time;
         EMeasure measure;
     } typedef timestamp;
-    vector <timestamp> timestamps_;
+    std::vector <timestamp> timestamps_;
     hrc::time_point startTime_;
 };
 

@@ -1,22 +1,46 @@
 #ifndef CALIB_CAM_TASKMANAGER_HPP
 #define CALIB_CAM_TASKMANAGER_HPP
 
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/anonymous_shared_memory.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/thread/mutex.hpp>
 
-#define TASK_MANAGER_SHARED_MEMORY "shm"
+#include "ImageCorrection.hpp"
 
 using namespace boost::interprocess;
+
+#define MAT cv::Mat
+#define MUTEX boost::mutex
+
+typedef boost::interprocess::allocator<MAT, managed_shared_memory::segment_manager>  ShmemMatAllocator;
+typedef std::vector<MAT, ShmemMatAllocator> SharedMatVector;
+typedef boost::interprocess::allocator<MUTEX, managed_shared_memory::segment_manager>  ShmemMutexAllocator;
+typedef std::vector<MUTEX*, ShmemMutexAllocator> SharedMutexVector;
 
 class TaskManager
 {
 public:
     TaskManager();
-    void start(int nOfSlaves = 2);
+    void start();
 private:
     void masterTask();
-    void slaveTask(int pid);
-    int numberOfSlaves_;
+    void slaveTask(int);
+    void prepareSharedData();
+    void removeSegment();
+    uint numberOfSlaves_;
+    uint numberOfTasks_;
+    managed_shared_memory segment_;
+    const ShmemMatAllocator mat_alloc_inst_;
+    const ShmemMutexAllocator mutex_alloc_inst_;
+    SharedMatVector leftSharedVector_;
+    SharedMatVector rightSharedVector_;
+    SharedMatVector disparitySharedVector_;
+    SharedMutexVector taskReadyMutexSharedVector_;
+    SharedMutexVector taskDoneMutexSharedVector_;
 };
 
 

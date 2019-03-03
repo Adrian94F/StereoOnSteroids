@@ -1,5 +1,3 @@
-#include "header.hpp"
-
 #include <opencv2/ximgproc.hpp>
 
 #include "Cameras.hpp"
@@ -12,7 +10,7 @@ using namespace cv::ximgproc;
 
 void liveProcessing()
 {
-    ImageCorrection ic(calibPath + calibFile);
+    /*ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
     Cameras cameras;
     DisparityMapCalculator dmc;
@@ -32,7 +30,7 @@ void liveProcessing()
         imshow("Disparity", map);
         timer.measure(Timer::EMeasure::FRAME_END);
     } while(waitKey(30) != 27);
-    timer.printLog();
+    timer.printLog();*/
 }
 
 int main(int argc, char const *argv[])
@@ -40,7 +38,7 @@ int main(int argc, char const *argv[])
     /*if (test())
         return 1;*/
     TaskManager tm;
-    tm.start(3);
+    tm.start();
     liveProcessing();
     return 0;
 }

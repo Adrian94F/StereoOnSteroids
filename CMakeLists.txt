@@ -16,7 +16,7 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 
     add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp Cameras.cpp Timer.cpp TaskManager.cpp)
-    target_link_libraries(disparity ${OpenCV_LIBS} ${Boost_LIBRARIES} -lrt)
+    target_link_libraries(disparity ${OpenCV_LIBS} ${Boost_LIBRARIES} -lrt -lpthread)
 endif()
 
 add_executable(calibrate calib_intrinsic.cpp)
