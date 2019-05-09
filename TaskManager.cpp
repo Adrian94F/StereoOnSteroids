@@ -9,58 +9,29 @@
 
 #include "Cameras.hpp"
 #include "DisparityMapCalculator.hpp"
+#include "FakeCameras.hpp"
 #include "header.hpp"
 #include "TaskManager.hpp"
 #include "Timer.hpp"
 
-#define SHARED_MEMORY_NAME "MySharedMemory45==80893763"
+#define SHARED_MEMORY_NAME "MySharedMemory"
 #define SHARED_MEMORY_SIZE 65536 //(1280*720*4)
-#define LEFT_INPUT_VECTOR "left_vec"
-#define RIGHT_INPUT_VECTOR "right_vec"
-#define DISPARITY_MAP_VECTOR "disparity_vec"
-#define TASK_READY_MUTEX_VECTOR "task_ready_mutex_vector"
-#define TASK_DONE_MUTEX_VECTOR "task_done_mutex_vector"
 
 TaskManager::TaskManager()
 : numberOfSlaves_{4}
 , numberOfTasks_{4}
 , segment_{managed_shared_memory(open_or_create, SHARED_MEMORY_NAME, SHARED_MEMORY_SIZE)}
-, mat_alloc_inst_{segment_.get_segment_manager()}
-, mutex_alloc_inst_{segment_.get_segment_manager()}
-, leftSharedVector_{*segment_.construct<SharedMatVector>(LEFT_INPUT_VECTOR)(mat_alloc_inst_)}
-, rightSharedVector_{*segment_.construct<SharedMatVector>(RIGHT_INPUT_VECTOR)(mat_alloc_inst_)}
-, disparitySharedVector_{*segment_.construct<SharedMatVector>(DISPARITY_MAP_VECTOR)(mat_alloc_inst_)}
-, taskReadyMutexSharedVector_{*segment_.construct<SharedMutexVector>(TASK_READY_MUTEX_VECTOR)(mutex_alloc_inst_)}
-, taskDoneMutexSharedVector_{*segment_.construct<SharedMutexVector>(TASK_DONE_MUTEX_VECTOR)(mutex_alloc_inst_)}
 {
     prepareSharedData();
 }
 
 void TaskManager::prepareSharedData()
 {
-    // resize vectors
-    leftSharedVector_.resize(numberOfTasks_);
-    rightSharedVector_.resize(numberOfTasks_);
-    disparitySharedVector_.resize(numberOfTasks_);
-    taskReadyMutexSharedVector_.resize(numberOfTasks_);
-    taskDoneMutexSharedVector_.resize(numberOfTasks_);
-
-    for (auto i = 0; i < numberOfTasks_; i++)
-    {
-        taskDoneMutexSharedVector_[i] = new boost::mutex();
-        taskReadyMutexSharedVector_[i] = new boost::mutex();
-        taskReadyMutexSharedVector_[i]->lock();
-    }
 }
 
 void TaskManager::removeSegment()
 {
-    // wen done, destroy the vector from the segment
-    segment_.destroy<SharedMatVector>(LEFT_INPUT_VECTOR);
-    segment_.destroy<SharedMatVector>(RIGHT_INPUT_VECTOR);
-    segment_.destroy<SharedMatVector>(DISPARITY_MAP_VECTOR);
-    segment_.destroy<SharedMutexVector>(TASK_READY_MUTEX_VECTOR);
-    segment_.destroy<SharedMutexVector>(TASK_DONE_MUTEX_VECTOR);
+    // when done, destroy the vector from the segment
     shared_memory_object::remove(SHARED_MEMORY_NAME);
 }
 
@@ -89,10 +60,14 @@ void TaskManager::start()
 
 void TaskManager::masterTask()
 {
-    ImageCorrection ic(calibPath + calibFile);
+    ImageCorrection ic;  // (calibPath + calibFile);
     ImageCorrection::MatsPair mats;
-    Cameras cameras;
+    //Cameras cameras;
+    FakeCameras cameras;
     Timer timer("Disparity");
+
+    DisparityMapCalculator dmc;
+
     timer.reset();
     do
     {
@@ -109,36 +84,29 @@ void TaskManager::masterTask()
         int height = mats.left.rows;
         int partHeight = height / numberOfTasks_;
 
-        leftSharedVector_.clear();
-        rightSharedVector_.clear();
-
-        disparitySharedVector_.clear();
         cv::Mat map;
+
+        std::vector<cv::Mat> subMaps;
 
         for (auto i = 0; i < numberOfTasks_; i++)
         {
             cv::Mat left = cv::Mat(mats.left, cv::Rect(0, i * partHeight, width, partHeight));
             cv::Mat right = cv::Mat(mats.right, cv::Rect(0, i * partHeight, width, partHeight));
-            leftSharedVector_[i] = left;
-            rightSharedVector_[i] = right;
-            taskReadyMutexSharedVector_[i]->unlock();
+            Mat subMap = dmc.getMap(left, right);
+            subMaps.push_back(subMap);
         }
 
         // wait for map generation in slaves
         for (auto i = 0; i < numberOfTasks_; i++)
         {
-            taskDoneMutexSharedVector_[i]->lock();
             if (i > 0)
             {
-                vconcat(map, disparitySharedVector_[i], map);
+                vconcat(map, subMaps[i], map);
             }
             else
             {
-                map = disparitySharedVector_[i];
+                map = subMaps[i];
             }
-            taskDoneMutexSharedVector_[i]->unlock();
-
-            taskReadyMutexSharedVector_[i]->lock();
         }
         timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
         // merge images
@@ -158,17 +126,8 @@ void TaskManager::slaveTask(int number)
 
     while(active)
     {
-
-        taskReadyMutexSharedVector_[number]->lock();
-
-        taskDoneMutexSharedVector_[number]->lock();
-
-        Mat subMap = dmc.getMap(leftSharedVector_[number], rightSharedVector_[number]);
-        disparitySharedVector_[number] = subMap;
-
-        taskDoneMutexSharedVector_[number]->unlock();
-
-        taskReadyMutexSharedVector_[number]->unlock();
+        /*Mat subMap = dmc.getMap(leftSharedVector_[number], rightSharedVector_[number]);
+        disparitySharedVector_[number] = subMap;*/
         active = false;
     }
 

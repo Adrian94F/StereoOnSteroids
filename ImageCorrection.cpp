@@ -1,12 +1,20 @@
 #include "ImageCorrection.hpp"
 
 ImageCorrection::ImageCorrection(string calibFilePath)
+: fake{false}
 {
     readCalibrationDataFile(calibFilePath);
 }
 
+ImageCorrection::ImageCorrection()
+: fake{true}
+{
+}
+
 void ImageCorrection::undistortRectify(MatsPair& mats)
 {
+    if (fake)
+        return;
     MatsPair matsX, matsY, matsOut;
 
     cv::initUndistortRectifyMap(K.left, D.left, R.left, P.left, mats.left.size(), CV_32F, matsX.left, matsY.left);

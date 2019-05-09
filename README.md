@@ -32,6 +32,7 @@ Generate disparity map by running `./disparity`. It creates disparity map of liv
 - Disparity map generation
 - Disparity map from live image generation
 - Timer
+- Fake camera for environment with no cameras connected
 
 ## Tips
 - on Manjaro Linux: build OpenCV with flag `CMAKE_EXE_LINKER_FLAGS=-lcblas` ([solution found here](https://unix.stackexchange.com/questions/417032/arch-linux-problems-building-opencv-with-cuda-libopencv-core-so-3-4-0-undefin)); added this flag to CMakeLists.txt

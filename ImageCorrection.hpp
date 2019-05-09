@@ -1,8 +1,8 @@
 #ifndef IMAGECORRECTION_HPP
 #define IMAGECORRECTION_HPP
 
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/imgproc.hpp>
 
 using namespace std;
 using namespace cv;
@@ -15,6 +15,7 @@ public:
         Mat right;
     } typedef MatsPair;
 public:
+    ImageCorrection();
     ImageCorrection(string calibFilePath);
     void undistortRectify(MatsPair& mats);
 private:
@@ -26,6 +27,7 @@ private:
     MatsPair D;
     Mat Q;
     Vec3d T;
+    bool fake;
 };
 
 #endif  // IMAGECORRECTION_HPP

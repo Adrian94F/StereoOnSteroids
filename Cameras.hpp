@@ -2,20 +2,21 @@
 #define CAMERAS_HPP
 
 #include <iostream>
-#include <opencv2/core/core.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
+
+#include "ICameras.hpp"
 
 using namespace std;
 using namespace cv;
 
-class Cameras {
+class Cameras : public ICameras
+{
 public:
     Cameras();
     Mat getLeft();
     Mat getRight();
-    Mat getBoth();
-    static Mat resizeAndConcat(Mat imL, Mat imR, int d=2);
 private:
     void checkCameras();
     VideoCapture capL;

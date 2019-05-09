@@ -34,13 +34,6 @@ private:
     uint numberOfSlaves_;
     uint numberOfTasks_;
     managed_shared_memory segment_;
-    const ShmemMatAllocator mat_alloc_inst_;
-    const ShmemMutexAllocator mutex_alloc_inst_;
-    SharedMatVector leftSharedVector_;
-    SharedMatVector rightSharedVector_;
-    SharedMatVector disparitySharedVector_;
-    SharedMutexVector taskReadyMutexSharedVector_;
-    SharedMutexVector taskDoneMutexSharedVector_;
 };
 
 
