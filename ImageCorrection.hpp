@@ -15,11 +15,10 @@ public:
         Mat right;
     } typedef MatsPair;
 public:
-    ImageCorrection();
-    ImageCorrection(string calibFilePath);
+    ImageCorrection(const string& calibFilePath = "");
     void undistortRectify(MatsPair& mats);
 private:
-    void readCalibrationDataFile(string calibFilePath);
+    void readCalibrationDataFile(const string& calibFilePath);
 private:
     MatsPair R;
     MatsPair P;
@@ -27,7 +26,7 @@ private:
     MatsPair D;
     Mat Q;
     Vec3d T;
-    bool fake;
+    bool noCorrection_;
 };
 
 #endif  // IMAGECORRECTION_HPP

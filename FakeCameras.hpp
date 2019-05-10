@@ -16,8 +16,8 @@ class FakeCameras : public ICameras
 {
 public:
     FakeCameras();
-    Mat getLeft();
-    Mat getRight();
+    Mat getLeft() override;
+    Mat getRight() override;
 private:
     Mat left_;
     Mat right_;

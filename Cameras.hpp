@@ -15,14 +15,14 @@ class Cameras : public ICameras
 {
 public:
     Cameras();
-    Mat getLeft();
-    Mat getRight();
+    Mat getLeft() override;
+    Mat getRight() override;
 private:
     void checkCameras();
-    VideoCapture capL;
-    VideoCapture capR;
-    int camL = 0;
-    int camR = 2;
+    VideoCapture lCapture_;
+    VideoCapture rCapture_;
+    int lCamNumber_ = 0;
+    int rCamNumber_ = 2;
 };
 
 #endif //CAM_CAMERAS_HPP

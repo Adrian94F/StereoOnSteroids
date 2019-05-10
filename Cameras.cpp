@@ -2,18 +2,18 @@
 
 Cameras::Cameras()
 {
-    capL.open(camL);
-    capR.open(camR);
+    lCapture_.open(lCamNumber_);
+    rCapture_.open(rCamNumber_);
     checkCameras();
 }
 
 void Cameras::checkCameras()
 {
-    if (!capL.isOpened())
+    if (!lCapture_.isOpened())
     {
         throw "Cam 1 error";
     }
-    if (!capR.isOpened())
+    if (!rCapture_.isOpened())
     {
         throw "Cam 2 error";
     }
@@ -22,13 +22,13 @@ void Cameras::checkCameras()
 Mat Cameras::getLeft()
 {
     Mat out;
-    capL >> out;
+    lCapture_ >> out;
     return out;
 }
 
 Mat Cameras::getRight()
 {
     Mat out;
-    capR >> out;
+    rCapture_ >> out;
     return out;
 }

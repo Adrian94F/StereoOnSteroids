@@ -10,12 +10,12 @@ include_directories($(OpenCV_INCLUDE_DIRS)/opencv4)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.69.0 COMPONENTS system)
+find_package(Boost 1.58.0 COMPONENTS system)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 
-    add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp ICameras.cpp Cameras.cpp FakeCameras.cpp Timer.cpp TaskManager.cpp)
+    add_executable(disparity disparity.cpp ImageCorrection.cpp DisparityMapCalculator.cpp ICameras.cpp Cameras.cpp FakeCameras.cpp Timer.cpp)
     target_link_libraries(disparity ${OpenCV_LIBS} ${Boost_LIBRARIES} -lrt -lpthread)
 endif()
 

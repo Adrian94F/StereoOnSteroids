@@ -1,19 +1,13 @@
 #include "ImageCorrection.hpp"
 
-ImageCorrection::ImageCorrection(string calibFilePath)
-: fake{false}
+ImageCorrection::ImageCorrection(const string& calibFilePath)
 {
     readCalibrationDataFile(calibFilePath);
 }
 
-ImageCorrection::ImageCorrection()
-: fake{true}
-{
-}
-
 void ImageCorrection::undistortRectify(MatsPair& mats)
 {
-    if (fake)
+    if (noCorrection_)
         return;
     MatsPair matsX, matsY, matsOut;
 
@@ -25,9 +19,11 @@ void ImageCorrection::undistortRectify(MatsPair& mats)
     mats = matsOut;
 }
 
-void ImageCorrection::readCalibrationDataFile(string calibFilePath)
+void ImageCorrection::readCalibrationDataFile(const string& calibFilePath)
 {
     cv::FileStorage fs1(calibFilePath, cv::FileStorage::READ);
+    noCorrection_ = !fs1.isOpened();
+
     fs1["K1"] >> K.left;
     fs1["K2"] >> K.right;
     fs1["D1"] >> D.left;
