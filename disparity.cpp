@@ -47,7 +47,7 @@ void singleThreadProcessing()
         timer.measure(Timer::EMeasure::UNDISTORTED);
         Mat map = dmc.getMap(mats.left, mats.right);
         timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
-        imshow("Cameras", ICameras::resizeAndConcat(mats.left, mats.right));
+        imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", map);
         timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
     } while(waitKey(30) != 27);
@@ -178,7 +178,7 @@ void parallelProcessing(int nOfTasks = 4)
 
 int main(int argc, char const *argv[])
 {
-    //singleThreadProcessing();
+    singleThreadProcessing();
     parallelProcessing(1);
     parallelProcessing(2);
     parallelProcessing(4);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(CALIB_CAM)
+project(StereoOnSteroids)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXE_LINKER_FLAGS -lcblas)
