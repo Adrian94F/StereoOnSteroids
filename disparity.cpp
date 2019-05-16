@@ -10,6 +10,8 @@
 #include "Task.hpp"
 #include "Timer.hpp"
 
+#define DISPARITY_BORDER 6
+
 using namespace cv::ximgproc;
 
 std::vector<cv::Mat> lInputs;
@@ -75,15 +77,18 @@ void masterTask(int nOfTasks)
         timer.measure(Timer::EMeasure::UNDISTORTED);
 
         // divide into parts for each slave
-        int width = mats.left.cols;
-        int height = mats.left.rows;
-        int partHeight = height / nOfTasks;
+        auto width = mats.left.cols;
+        auto height = mats.left.rows / nOfTasks;
         cv::Mat disparityMap;
 
         for (auto i = 0; i < tasksToDo.size(); i++)
         {
-            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, i * partHeight, width, partHeight));
-            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, i * partHeight, width, partHeight));
+            auto topOffset = i == 0 ? 0 : DISPARITY_BORDER;
+            auto bottomOffset = i != (tasksToDo.size() -1) ? DISPARITY_BORDER : 0;
+            auto yBegin = i * height - topOffset;
+            auto partHeight = height + topOffset + bottomOffset;
+            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, yBegin, width, partHeight));
+            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, yBegin, width, partHeight));
             tasksToDo[i] = {Task::ETaskStatus_TODO};
         }
         timer.measure(Timer::EMeasure::PREPARED_TASKS);
@@ -99,6 +104,7 @@ void masterTask(int nOfTasks)
         for (auto i = 0; i < results.size(); i++)
         {
             auto submap = results[i];
+            submap = cv::Mat(submap, cv::Rect(0, DISPARITY_BORDER, submap.cols, submap.rows - 2 * DISPARITY_BORDER));
             if (i > 0)
             {
                 vconcat(disparityMap, submap, disparityMap);
@@ -172,7 +178,7 @@ void parallelProcessing(int nOfTasks = 4)
 
 int main(int argc, char const *argv[])
 {
-    singleThreadProcessing();
+    //singleThreadProcessing();
     parallelProcessing(1);
     parallelProcessing(2);
     parallelProcessing(4);

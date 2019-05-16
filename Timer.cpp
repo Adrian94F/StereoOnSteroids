@@ -108,7 +108,7 @@ void Timer::printStatistics(boost::optional<int> n)
     std::cout << "\n\nPrinting statistics for ";
     if (n)
     {
-        std::cout << "multi-threaded version (" << n.value() << " slaves)\n";
+        std::cout << "multi-threaded version (" << n.value() << " slave" << (n.value() == 1 ? "" : "s") << ")\n";
     }
     else
     {

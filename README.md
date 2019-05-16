@@ -23,6 +23,16 @@ Generate disparity map by running `./disparity`. It creates disparity map of liv
   <br/>Example images from cameras with generated disparity map.
 </p>
 
+<p align="center">
+  <img src="./doc/multi_2_wo_correction_result.png" width="500px")/>
+  <br/>Example images with multithreaded generated disparity map.
+</p>
+
+<p align="center">
+  <img src="./doc/multi_2_w_correction_result.png" width="500px")/>
+  <br/>Example images with multithreaded generated disparity map (using black borders correction).
+</p>
+
 ## TODO
 - Fix black frames on generated disparity maps
 - Make timer log clearer to read and analyse
