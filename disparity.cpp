@@ -1,4 +1,3 @@
-#include <boost/optional.hpp>
 #include <condition_variable>
 #include <mutex>
 #include <opencv2/ximgproc.hpp>
@@ -13,13 +12,20 @@
 
 using namespace cv::ximgproc;
 
-int numberOfTasks = 4;
+std::vector<cv::Mat> lInputs;
+std::vector<cv::Mat> rInputs;
+std::vector<cv::Mat> results;
+std::vector<std::thread> threads;
+std::vector<Task> tasksToDo;
 
-std::vector<cv::Mat> lInputs(numberOfTasks);
-std::vector<cv::Mat> rInputs(numberOfTasks);
-std::vector<cv::Mat> results(numberOfTasks);
-
-std::vector<Task> tasksToDo(numberOfTasks);
+void prepareVectors(int n)
+{
+    lInputs.resize(n);
+    rInputs.resize(n);
+    results.resize(n);
+    threads.resize(n);
+    tasksToDo.resize(n);
+}
 
 void singleThreadProcessing()
 {
@@ -27,11 +33,11 @@ void singleThreadProcessing()
     ImageCorrection::MatsPair mats;
     FakeCameras cameras;
     DisparityMapCalculator dmc;
-    Timer timer("SingleThreadDisparity");
+    Timer timer(Timer::EMode::SINGLETHREADED);
     timer.reset();
     do
     {
-        timer.measure(Timer::EMeasure::FRAME_BEGIN);
+        timer.measure(Timer::EMeasure::STARTED);
         mats.left = cameras.getLeft();
         mats.right = cameras.getRight();
         timer.measure(Timer::EMeasure::GOT_IMAGES);
@@ -41,17 +47,17 @@ void singleThreadProcessing()
         timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
         imshow("Cameras", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", map);
-        timer.measure(Timer::EMeasure::FRAME_END);
+        timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
     } while(waitKey(30) != 27);
-    timer.printLog();
+    timer.printStatistics();
 }
 
-void masterTask()
+void masterTask(int nOfTasks)
 {
     FakeCameras cameras;
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
-    Timer timer("MultiThreadedDisparity");
+    Timer timer(Timer::EMode::MULTITHREADED);
 
     DisparityMapCalculator dmc;
 
@@ -59,10 +65,11 @@ void masterTask()
     do
     {
         // get images from cameras
-        timer.measure(Timer::EMeasure::FRAME_BEGIN);
+        timer.measure(Timer::EMeasure::STARTED);
         mats.left = cameras.getLeft();
         mats.right = cameras.getRight();
         timer.measure(Timer::EMeasure::GOT_IMAGES);
+
         // transform images
         ic.undistortRectify(mats);
         timer.measure(Timer::EMeasure::UNDISTORTED);
@@ -70,57 +77,58 @@ void masterTask()
         // divide into parts for each slave
         int width = mats.left.cols;
         int height = mats.left.rows;
-        int partHeight = height / numberOfTasks;
+        int partHeight = height / nOfTasks;
+        cv::Mat disparityMap;
 
-        cv::Mat map;
-
-        for (auto i = 0; i < numberOfTasks; i++)
+        for (auto i = 0; i < tasksToDo.size(); i++)
         {
             lInputs[i] = cv::Mat(mats.left, cv::Rect(0, i * partHeight, width, partHeight));
             rInputs[i] = cv::Mat(mats.right, cv::Rect(0, i * partHeight, width, partHeight));
-            tasksToDo[i] = {Task::ETaskStatus_TODO};  //, i};
+            tasksToDo[i] = {Task::ETaskStatus_TODO};
         }
+        timer.measure(Timer::EMeasure::PREPARED_TASKS);
 
-        // wait for map generation in slaves
+        // wait for disparityMap generation in slaves
         while(std::count_if(
                 tasksToDo.begin(), tasksToDo.end(),
                 [](auto task){ return task.status == Task::ETaskStatus_Done; }
-            ) < numberOfTasks);
+            ) < nOfTasks);
+        timer.measure(Timer::EMeasure::COMPLETED_TASKS);
 
         // merge images
-        for (auto i = 0; i < numberOfTasks; i++)
+        for (auto i = 0; i < results.size(); i++)
         {
             auto submap = results[i];
             if (i > 0)
             {
-                vconcat(map, submap, map);
+                vconcat(disparityMap, submap, disparityMap);
             }
             else
             {
-                map = submap;
+                disparityMap = submap;
             }
         }
-        timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
+        timer.measure(Timer::EMeasure::MERGED_RESULTS);
+
         // display images
         imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
-        if (map.cols > 0 && map.rows > 0)
-        {
-            imshow("Disparity", map);
-        }
-        timer.measure(Timer::EMeasure::FRAME_END);
+        imshow("Disparity", disparityMap);
+        timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
     } while(waitKey(30) != 27);
 
-    for (auto i = 0; i < numberOfTasks; i++)
-    {
-        tasksToDo[i] = {Task::ETaskStatus_Abort};
-    }
-    timer.printLog();
+    // stop threads
+    std::for_each(tasksToDo.begin(), tasksToDo.end(),
+            [](auto& t){ t = {Task::ETaskStatus_Abort}; });
+
+    // print statistics
+    timer.printStatistics(nOfTasks);
 }
 
 void slaveTask(int id)
 {
     DisparityMapCalculator dmc;
 
+    // wait for master readiness
     while(tasksToDo[id].status == Task::ETaskStatus_Wait);
 
     while(tasksToDo[id].status != Task::ETaskStatus_Abort)
@@ -131,41 +139,45 @@ void slaveTask(int id)
             break;
         }
 
-        std::cout << id << ' ';
+        // calculate disparity map
         results[id] = dmc.getMap(lInputs[id], rInputs[id]);
 
         tasksToDo[id].status = Task::ETaskStatus_Done;
-
     }
 }
 
-void parallelProcessing()
+void parallelProcessing(int nOfTasks = 4)
 {
-    std::vector<std::thread> threads;
-    threads.resize(numberOfTasks);
+    prepareVectors(nOfTasks);
 
-    for (auto i = 0; i < numberOfTasks; i++)
-    {
-        tasksToDo[i] = {Task::ETaskStatus_Wait};
-    }
+    std::for_each(tasksToDo.begin(), tasksToDo.end(),
+            [](auto& t){ t = {Task::ETaskStatus_Wait}; });
 
-    for (auto t = 0; t < threads.size(); t++)
-    {
-        threads[t] = std::thread(slaveTask, t);
-    }
+    auto id = 0;
+    std::for_each(threads.begin(), threads.end(),
+            [&id](std::thread& t)
+            {
+                t = std::thread(slaveTask, id++);
+            });
 
-    masterTask();
+    masterTask(nOfTasks);
 
-    for (auto t = 0; t < threads.size(); t++)
-    {
-        threads[t].native_handle();
-        threads[t].join();
-    }
+    std::for_each(threads.begin(), threads.end(),
+            [](auto& t)
+            {
+                t.native_handle();
+                t.join();
+            });
 }
 
 int main(int argc, char const *argv[])
 {
-    //singleThreadProcessing();
-    parallelProcessing();
+    singleThreadProcessing();
+    parallelProcessing(1);
+    parallelProcessing(2);
+    parallelProcessing(4);
+    parallelProcessing(8);
+    parallelProcessing(16);
+    parallelProcessing(32);
     return 0;
 }
