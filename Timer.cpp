@@ -28,7 +28,7 @@ void Timer::measure(EMeasure m)
 
 void Timer::reset()
 {
-    timestamps_ = vector<timestamp>();
+    timestamps_ = vector<Timestamp>();
     startTime_ = getTime();
 }
 

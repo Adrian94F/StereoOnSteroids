@@ -1,4 +1,4 @@
-struct
+struct Task
 {
     enum
     {
@@ -7,6 +7,5 @@ struct
         ETaskStatus_Done,
         ETaskStatus_Abort
     } typedef ETaskStatus;
-
     ETaskStatus status;
-} typedef Task;
+};

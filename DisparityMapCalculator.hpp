@@ -7,21 +7,23 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/ximgproc.hpp>
 
+#include "settings.hpp"
+
 using namespace cv;
 using namespace cv::ximgproc;
 
 class DisparityMapCalculator
 {
 public:
-    DisparityMapCalculator();
-    Mat getMap(Mat left, Mat right, bool filtered=true);
+    DisparityMapCalculator() = default;
+    Mat getMap(Mat& left, Mat& right, bool filtered=true);
 private:
-    void calculateDisparity(Mat left, Mat right);
-    Mat filter(Mat mat);
+    void calculateDisparity(Mat& left, Mat& right);
+    Mat filter(Mat& mat);
 private:
-    int max_disp = 64;
-    int wsize = 7;
-    int vis_mult = 2;
+    int numDisparities_ = MAX_NUM_DISPARITIES;
+    int blockSize_ = BLOCK_SIZE;
+    int vis_mult_ = 2;
     Mat left_for_matcher, right_for_matcher, left_disp, right_disp, filtered_disp;
     Ptr<StereoMatcher> left_matcher, right_matcher;
 };

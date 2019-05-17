@@ -56,11 +56,11 @@ private:
     void prepareStatistics();
     void countMeanTimes();
     EMode mode_;
-    struct {
+    struct Timestamp{
         hrc::time_point time;
         EMeasure measure;
-    } typedef timestamp;
-    std::vector <timestamp> timestamps_;
+    };
+    std::vector <Timestamp> timestamps_;
     hrc::time_point startTime_;
     std::map<EOperation, std::vector<double>> timesOfOperations_;
     std::map<EOperation, double> meanTimesOfOperations_;

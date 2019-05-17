@@ -7,10 +7,9 @@
 #include "header.hpp"
 #include "DisparityMapCalculator.hpp"
 #include "ImageCorrection.hpp"
+#include "settings.hpp"
 #include "Task.hpp"
 #include "Timer.hpp"
-
-#define DISPARITY_BORDER 6
 
 using namespace cv::ximgproc;
 
@@ -83,12 +82,10 @@ void masterTask(int nOfTasks)
 
         for (auto i = 0; i < tasksToDo.size(); i++)
         {
-            auto topOffset = i == 0 ? 0 : DISPARITY_BORDER;
-            auto bottomOffset = i != (tasksToDo.size() -1) ? DISPARITY_BORDER : 0;
-            auto yBegin = i * height - topOffset;
-            auto partHeight = height + topOffset + bottomOffset;
-            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, yBegin, width, partHeight));
-            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, yBegin, width, partHeight));
+            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, i * height, width, height));
+            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, i * height, width, height));
+            cv::copyMakeBorder(lInputs[i], lInputs[i], BORDER, BORDER, BORDER, BORDER, cv::BORDER_DEFAULT);
+            cv::copyMakeBorder(rInputs[i], rInputs[i], BORDER, BORDER, BORDER, BORDER, cv::BORDER_DEFAULT);
             tasksToDo[i] = {Task::ETaskStatus_TODO};
         }
         timer.measure(Timer::EMeasure::PREPARED_TASKS);
@@ -104,7 +101,7 @@ void masterTask(int nOfTasks)
         for (auto i = 0; i < results.size(); i++)
         {
             auto submap = results[i];
-            submap = cv::Mat(submap, cv::Rect(0, DISPARITY_BORDER, submap.cols, submap.rows - 2 * DISPARITY_BORDER));
+            submap = cv::Mat(submap, cv::Rect(BORDER, BORDER, width, height));
             if (i > 0)
             {
                 vconcat(disparityMap, submap, disparityMap);
@@ -179,11 +176,10 @@ void parallelProcessing(int nOfTasks = 4)
 int main(int argc, char const *argv[])
 {
     singleThreadProcessing();
-    parallelProcessing(1);
-    parallelProcessing(2);
-    parallelProcessing(4);
-    parallelProcessing(8);
-    parallelProcessing(16);
-    parallelProcessing(32);
+    uint p = 0;
+    while (p++ < 4)
+    {
+        parallelProcessing(1<<p);
+    }
     return 0;
 }

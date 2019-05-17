@@ -6,7 +6,7 @@ Save images pairs from camera by running
 `./read`
 and pressing any key. Press ESC key to exit.
 
-calibrate left and right camera separetly using
+calibrate left and right camera separately using
 `./calibrate`
 and calibrate camera system using
 `./calibrate-stereo`.
