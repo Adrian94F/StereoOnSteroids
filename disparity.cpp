@@ -82,10 +82,14 @@ void masterTask(int nOfTasks)
 
         for (auto i = 0; i < tasksToDo.size(); i++)
         {
-            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, i * height, width, height));
-            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, i * height, width, height));
-            cv::copyMakeBorder(lInputs[i], lInputs[i], BORDER, BORDER, BORDER, BORDER, cv::BORDER_DEFAULT);
-            cv::copyMakeBorder(rInputs[i], rInputs[i], BORDER, BORDER, BORDER, BORDER, cv::BORDER_DEFAULT);
+            auto offsetTop = i == 0 ? 0 : BORDER;
+            auto offsetBottom = i != (tasksToDo.size() -1) ? BORDER : 0;
+            auto y0 = i * height - offsetTop;
+            auto y = height + offsetTop + offsetBottom;
+            lInputs[i] = cv::Mat(mats.left, cv::Rect(0, y0, width, y));
+            rInputs[i] = cv::Mat(mats.right, cv::Rect(0, y0, width, y));
+
+            // Task i ready to process
             tasksToDo[i] = {Task::ETaskStatus_TODO};
         }
         timer.measure(Timer::EMeasure::PREPARED_TASKS);
@@ -100,8 +104,7 @@ void masterTask(int nOfTasks)
         // merge images
         for (auto i = 0; i < results.size(); i++)
         {
-            auto submap = results[i];
-            submap = cv::Mat(submap, cv::Rect(BORDER, BORDER, width, height));
+            auto submap = cv::Mat(results[i], cv::Rect(0, BORDER, results[i].cols, results[i].rows - 2 * BORDER));
             if (i > 0)
             {
                 vconcat(disparityMap, submap, disparityMap);
@@ -175,7 +178,7 @@ void parallelProcessing(int nOfTasks = 4)
 
 int main(int argc, char const *argv[])
 {
-    singleThreadProcessing();
+    //singleThreadProcessing();
     uint p = 0;
     while (p++ < 4)
     {

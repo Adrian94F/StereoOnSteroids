@@ -8,16 +8,13 @@ Timer::Timer(EMode mode)
 {
     timesOfOperations_[EOperation::GETTING_IMAGES] = std::vector<double>();
     timesOfOperations_[EOperation::UNDISTORTION] = std::vector<double>();
-    if (mode == EMode::SINGLETHREADED)
-    {
-        timesOfOperations_[EOperation::SINGLE_THREAD_DISPARITY_MAP_GENERATION] = std::vector<double>();
-    }
-    else
+    if (mode == EMode::MULTITHREADED)
     {
         timesOfOperations_[EOperation::PREPARING_TASKS] = std::vector<double>();
         timesOfOperations_[EOperation::MULTI_THREAD_DISPARITY_MAP_GENERATION] = std::vector<double>();
         timesOfOperations_[EOperation::MERGING_RESULTS] = std::vector<double>();
     }
+    timesOfOperations_[EOperation::DISPARITY_MAP_GENERATION] = std::vector<double>();
     timesOfOperations_[EOperation::DISPLAYING] = std::vector<double>();
 }
 
@@ -70,7 +67,7 @@ void Timer::prepareStatistics()
                 typeOfOperation = UNDISTORTION;
                 break;
             case DISPARITY_MAP_GENERATED:
-                typeOfOperation = SINGLE_THREAD_DISPARITY_MAP_GENERATION;
+                typeOfOperation = DISPARITY_MAP_GENERATION;
                 break;
             case PREPARED_TASKS:
                 typeOfOperation = PREPARING_TASKS;
@@ -88,6 +85,14 @@ void Timer::prepareStatistics()
                 typeOfOperation = CV_WAIT_KEY;
         }
         timesOfOperations_[typeOfOperation].push_back(timeSpan);
+        if (end.measure == MERGED_RESULTS)
+        {
+            // sum preparing tasks, map generation and merging results
+            begin = timestamps_[t - 3];
+            timeSpan = duration_cast<duration<double>>(end.time - begin.time).count();
+            typeOfOperation = DISPARITY_MAP_GENERATION;
+            timesOfOperations_[typeOfOperation].push_back(timeSpan);
+        }
     }
 }
 
@@ -125,14 +130,14 @@ void Timer::printStatistics(boost::optional<int> n)
             case UNDISTORTION:
                 std::cout << "Undistortion:              ";
                 break;
-            case SINGLE_THREAD_DISPARITY_MAP_GENERATION:
-                std::cout << "Single-threaded disparity: ";
+            case DISPARITY_MAP_GENERATION:
+                std::cout << "Disparity:                 ";
                 break;
             case PREPARING_TASKS:
                 std::cout << "Preparing tasks:           ";
                 break;
             case MULTI_THREAD_DISPARITY_MAP_GENERATION:
-                std::cout << "Multi-threaded disparity:  ";
+                std::cout << "Partial disparity:         ";
                 break;
             case MERGING_RESULTS:
                 std::cout << "Merging results:           ";
