@@ -13,7 +13,7 @@ int boardWidth = 9;
 int boardHeight = 6;
 float squareSize = 0.0265;
 int numOfImages = 36;
-string imPath = "../calib_imgs/0/";
+string imPath = "../calib_imgs/final/";
 
 string nameL = "left";
 string nameR = "right";

@@ -3,9 +3,10 @@
 #include <opencv2/ximgproc.hpp>
 #include <thread>
 
+#include "Cameras.hpp"
+#include "DisparityMapCalculator.hpp"
 #include "FakeCameras.hpp"
 #include "header.hpp"
-#include "DisparityMapCalculator.hpp"
 #include "ImageCorrection.hpp"
 #include "settings.hpp"
 #include "Task.hpp"
@@ -178,11 +179,11 @@ void parallelProcessing(int nOfTasks = 4)
 
 int main(int argc, char const *argv[])
 {
-    //singleThreadProcessing();
+    singleThreadProcessing();
     uint p = 0;
-    while (p++ < 4)
+    while (p < 4)
     {
-        parallelProcessing(1<<p);
+        parallelProcessing(1<<(p++));
     }
     return 0;
 }

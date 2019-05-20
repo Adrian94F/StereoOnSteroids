@@ -21,8 +21,8 @@ private:
     void checkCameras();
     VideoCapture lCapture_;
     VideoCapture rCapture_;
-    int lCamNumber_ = 0;
-    int rCamNumber_ = 2;
+    int lCamNumber_ = 2;
+    int rCamNumber_ = 0;
 };
 
 #endif //CAM_CAMERAS_HPP
