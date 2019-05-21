@@ -153,7 +153,7 @@ void slaveTask(int id)
     }
 }
 
-void parallelProcessing(int nOfTasks = 4)
+void multiThreadProcessing(int nOfTasks = 4)
 {
     prepareVectors(nOfTasks);
 
@@ -181,9 +181,9 @@ int main(int argc, char const *argv[])
 {
     singleThreadProcessing();
     uint p = 0;
-    while (p < 4)
+    do
     {
-        parallelProcessing(1<<(p++));
-    }
+        multiThreadProcessing(1 << p);
+    } while (p++ < 4);
     return 0;
 }
