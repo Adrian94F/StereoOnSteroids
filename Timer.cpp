@@ -98,10 +98,12 @@ void Timer::prepareStatistics()
 
 void Timer::countMeanTimes()
 {
+    meanTimesOfOperations_[EOperation::SUM] = 0;
     for (const auto& k : timesOfOperations_)
     {
         meanTimesOfOperations_[k.first] =
                 std::accumulate(k.second.begin(), k.second.end(), 0.0) / double(k.second.size()) * 1000.0;
+        meanTimesOfOperations_[EOperation::SUM] += meanTimesOfOperations_[k.first];
     }
 }
 
@@ -147,6 +149,9 @@ void Timer::printStatistics(boost::optional<int> n)
                 break;
             case CV_WAIT_KEY:
                 std::cout << "Waiting for key press:     ";
+                break;
+            case SUM:
+                std::cout << "Sum:                       ";
                 break;
         }
         cout << std::fixed << setprecision(10);

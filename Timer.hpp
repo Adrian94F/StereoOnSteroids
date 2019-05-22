@@ -43,7 +43,8 @@ public:
         MULTI_THREAD_DISPARITY_MAP_GENERATION,
         MERGING_RESULTS,
         DISPARITY_MAP_GENERATION,
-        DISPLAYING
+        DISPLAYING,
+        SUM
     };
     Timer() = default;
     explicit Timer(EMode);

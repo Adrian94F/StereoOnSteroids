@@ -35,9 +35,9 @@ void prepareVectors(int n)
 
 void singleThreadProcessing()
 {
+    Cameras cameras;
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
-    FakeCameras cameras;
     DisparityMapCalculator dmc;
     Timer timer(Timer::EMode::SINGLETHREADED);
     timer.reset();
@@ -60,7 +60,7 @@ void singleThreadProcessing()
 
 void masterTask(int nOfTasks)
 {
-    FakeCameras cameras;
+    Cameras cameras;
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
     Timer timer(Timer::EMode::MULTITHREADED);
