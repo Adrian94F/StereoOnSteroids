@@ -110,7 +110,7 @@ void Timer::printStatistics(boost::optional<int> n)
     prepareStatistics();
     countMeanTimes();
 
-    std::cout << "\n\nPrinting statistics for ";
+    std::cout << "Printing statistics for ";
     if (n)
     {
         std::cout << "multi-threaded version (" << n.value() << " slave" << (n.value() == 1 ? "" : "s") << ")\n";
@@ -152,4 +152,5 @@ void Timer::printStatistics(boost::optional<int> n)
         cout << std::fixed << setprecision(10);
         std::cout << setw(14) << k.second << " ms" << std::endl;
     }
+    std::cout << std::endl;
 }

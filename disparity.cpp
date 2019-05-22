@@ -19,6 +19,10 @@ std::vector<cv::Mat> rInputs;
 std::vector<cv::Mat> results;
 std::vector<std::thread> threads;
 std::vector<Task> tasksToDo;
+std::mutex mutexTODO;
+std::mutex mutexDone;
+std::condition_variable taskTODO;
+std::condition_variable taskDone;
 
 void prepareVectors(int n)
 {
@@ -92,14 +96,21 @@ void masterTask(int nOfTasks)
 
             // Task i ready to process
             tasksToDo[i] = {Task::ETaskStatus_TODO};
+            taskTODO.notify_all();
+            //std::cout << "sent notif to " << i << '\n';
         }
         timer.measure(Timer::EMeasure::PREPARED_TASKS);
 
         // wait for disparityMap generation in slaves
-        while(std::count_if(
-                tasksToDo.begin(), tasksToDo.end(),
-                [](auto task){ return task.status == Task::ETaskStatus_Done; }
-            ) < nOfTasks);
+        std::unique_lock<std::mutex> lk(mutexDone);
+        taskDone.wait(lk, [nOfTasks]()
+            {
+                return std::count_if(
+                        tasksToDo.begin(), tasksToDo.end(),
+                        [](auto task){ return task.status == Task::ETaskStatus_Done; }
+                    ) == nOfTasks;
+            });
+
         timer.measure(Timer::EMeasure::COMPLETED_TASKS);
 
         // merge images
@@ -125,7 +136,12 @@ void masterTask(int nOfTasks)
 
     // stop threads
     std::for_each(tasksToDo.begin(), tasksToDo.end(),
-            [](auto& t){ t = {Task::ETaskStatus_Abort}; });
+            [](auto& t)
+            {
+                t = {Task::ETaskStatus_Abort};
+            });
+    taskTODO.notify_all();
+
 
     // print statistics
     timer.printStatistics(nOfTasks);
@@ -137,24 +153,37 @@ void slaveTask(int id)
 
     // wait for master readiness
     while(tasksToDo[id].status == Task::ETaskStatus_Wait);
+    //while(tasksToDo[id].status != Task::ETaskStatus_Abort)
 
-    while(tasksToDo[id].status != Task::ETaskStatus_Abort)
+    auto active = true;
+
+    //std::cout << id << " ready\n";
+    while(active)
     {
-        while(tasksToDo[id].status != Task::ETaskStatus_TODO && tasksToDo[id].status != Task::ETaskStatus_Abort);
+        std::unique_lock<std::mutex> lk(mutexTODO);
+        taskTODO.wait(lk, [id](){
+            return tasksToDo[id].status == Task::ETaskStatus_TODO || tasksToDo[id].status == Task::ETaskStatus_Abort;
+        });
+
+        //std::cout << id << " got notif\n";
+
+        //while(tasksToDo[id].status != Task::ETaskStatus_TODO && tasksToDo[id].status != Task::ETaskStatus_Abort);
         if (tasksToDo[id].status == Task::ETaskStatus_Abort)
         {
-            break;
+            active = false;
         }
 
         // calculate disparity map
         results[id] = dmc.getMap(lInputs[id], rInputs[id]);
 
         tasksToDo[id].status = Task::ETaskStatus_Done;
+        taskDone.notify_all();
     }
 }
 
 void multiThreadProcessing(int nOfTasks = 4)
 {
+    prepareVectors(0);
     prepareVectors(nOfTasks);
 
     std::for_each(tasksToDo.begin(), tasksToDo.end(),
@@ -179,11 +208,39 @@ void multiThreadProcessing(int nOfTasks = 4)
 
 int main(int argc, char const *argv[])
 {
-    singleThreadProcessing();
-    uint p = 0;
-    do
+    if (argc == 2)
     {
-        multiThreadProcessing(1 << p);
-    } while (p++ < 4);
-    return 0;
+        auto num = strtol(argv[1], nullptr, 10);
+        if (num < 0)
+        {
+            std::cerr << "wrong argument" << std::endl;
+            return -1;
+        }
+        else
+        {
+            if (num == 0)
+            {
+                std::cout << "Running single threaded version" << std::endl;
+                singleThreadProcessing();
+            }
+            else
+            {
+                std::cout << "Running multi-threaded version with " << num << " workers\n";
+                multiThreadProcessing(num);
+            }
+        }
+    }
+    else
+    {
+        std::cout << "Running single-threaded\n";
+        singleThreadProcessing();
+        uint n = 1;
+        do
+        {
+            std::cout << "Running multi-threaded with " << n << (n == 1 ? "slave\n" : " slaves\n");
+            multiThreadProcessing(n);
+            n *= 2;
+        } while (n <= 16);
+        return 0;
+    }
 }
