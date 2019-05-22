@@ -33,16 +33,13 @@ Generate disparity map by running `./disparity`. It creates disparity map of liv
   <br/>Example images with multithreaded generated disparity map (using black borders correction).
 </p>
 
-## TODO
-- Fix black frames on generated disparity maps
-- Make timer log clearer to read and analyse
-
 ## Done
 - Cameras set calibration
 - Single- and multi-threaded version
   - Images collection from cameras
   - Fake camera for environment with no cameras connected
   - Disparity map generation
+- Statistics printed at the end
 
 ## Tips
 - on Manjaro Linux: build OpenCV with flag `CMAKE_EXE_LINKER_FLAGS=-lcblas` ([solution found here](https://unix.stackexchange.com/questions/417032/arch-linux-problems-building-opencv-with-cuda-libopencv-core-so-3-4-0-undefin)); added this flag to CMakeLists.txt
