@@ -19,9 +19,9 @@ std::vector<cv::Mat> rInputs;
 std::vector<cv::Mat> results;
 std::vector<std::thread> threads;
 std::vector<Task> tasksToDo;
-std::mutex mutexTODO;
+std::vector<std::mutex> mutexTODO;
 std::mutex mutexDone;
-std::condition_variable taskTODO;
+std::vector<std::condition_variable> tasksReadyToDo;
 std::condition_variable taskDone;
 
 void prepareVectors(int n)
@@ -31,15 +31,18 @@ void prepareVectors(int n)
     results.resize(n);
     threads.resize(n);
     tasksToDo.resize(n);
+    mutexTODO = std::vector<std::mutex>(n);
+    tasksReadyToDo = std::vector<std::condition_variable>(n);
 }
 
-void singleThreadProcessing()
+void singleThreadProcessing(int nOfFrames = -1)
 {
-    Cameras cameras;
+    FakeCameras cameras;
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
     DisparityMapCalculator dmc;
     Timer timer(Timer::EMode::SINGLETHREADED);
+    auto counter = 0;
     timer.reset();
     do
     {
@@ -54,19 +57,20 @@ void singleThreadProcessing()
         imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", map);
         timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
-    } while(waitKey(30) != 27);
+    } while(waitKey(30) != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
     timer.printStatistics();
 }
 
-void masterTask(int nOfTasks)
+void masterTask(int nOfTasks, int nOfFrames = -1)
 {
-    Cameras cameras;
+    FakeCameras cameras;
     ImageCorrection ic(calibPath + calibFile);
     ImageCorrection::MatsPair mats;
     Timer timer(Timer::EMode::MULTITHREADED);
 
     DisparityMapCalculator dmc;
 
+    auto counter = 0;
     timer.reset();
     do
     {
@@ -96,8 +100,7 @@ void masterTask(int nOfTasks)
 
             // Task i ready to process
             tasksToDo[i] = {Task::ETaskStatus_TODO};
-            taskTODO.notify_all();
-            //std::cout << "sent notif to " << i << '\n';
+            tasksReadyToDo[i].notify_one();
         }
         timer.measure(Timer::EMeasure::PREPARED_TASKS);
 
@@ -132,7 +135,7 @@ void masterTask(int nOfTasks)
         imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", disparityMap);
         timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
-    } while(waitKey(30) != 27);
+    } while(waitKey(30) != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
 
     // stop threads
     std::for_each(tasksToDo.begin(), tasksToDo.end(),
@@ -140,7 +143,11 @@ void masterTask(int nOfTasks)
             {
                 t = {Task::ETaskStatus_Abort};
             });
-    taskTODO.notify_all();
+    std::for_each(tasksReadyToDo.begin(), tasksReadyToDo.end(),
+            [](auto& t)
+            {
+                t.notify_one();
+            });
 
 
     // print statistics
@@ -151,23 +158,15 @@ void slaveTask(int id)
 {
     DisparityMapCalculator dmc;
 
-    // wait for master readiness
-    while(tasksToDo[id].status == Task::ETaskStatus_Wait);
-    //while(tasksToDo[id].status != Task::ETaskStatus_Abort)
-
     auto active = true;
 
-    //std::cout << id << " ready\n";
     while(active)
     {
-        std::unique_lock<std::mutex> lk(mutexTODO);
-        taskTODO.wait(lk, [id](){
+        std::unique_lock<std::mutex> lk(mutexTODO[id]);
+        tasksReadyToDo[id].wait(lk, [id](){
             return tasksToDo[id].status == Task::ETaskStatus_TODO || tasksToDo[id].status == Task::ETaskStatus_Abort;
         });
 
-        //std::cout << id << " got notif\n";
-
-        //while(tasksToDo[id].status != Task::ETaskStatus_TODO && tasksToDo[id].status != Task::ETaskStatus_Abort);
         if (tasksToDo[id].status == Task::ETaskStatus_Abort)
         {
             active = false;
@@ -177,11 +176,11 @@ void slaveTask(int id)
         results[id] = dmc.getMap(lInputs[id], rInputs[id]);
 
         tasksToDo[id].status = Task::ETaskStatus_Done;
-        taskDone.notify_all();
+        taskDone.notify_one();
     }
 }
 
-void multiThreadProcessing(int nOfTasks = 4)
+void multiThreadProcessing(int nOfTasks = 4, int nOfFrames = -1)
 {
     prepareVectors(0);
     prepareVectors(nOfTasks);
@@ -196,7 +195,7 @@ void multiThreadProcessing(int nOfTasks = 4)
                 t = std::thread(slaveTask, id++);
             });
 
-    masterTask(nOfTasks);
+    masterTask(nOfTasks, nOfFrames);
 
     std::for_each(threads.begin(), threads.end(),
             [](auto& t)
@@ -232,15 +231,26 @@ int main(int argc, char const *argv[])
     }
     else
     {
+        auto nOfFrames = 100;
+
         std::cout << "Running single-threaded\n";
-        singleThreadProcessing();
-        uint n = 1;
-        do
-        {
-            std::cout << "Running multi-threaded with " << n << (n == 1 ? "slave\n" : " slaves\n");
-            multiThreadProcessing(n);
-            n *= 2;
-        } while (n <= 16);
+        singleThreadProcessing(nOfFrames);
+
+        std::vector<int> v(8);
+        auto f = []()
+                {
+                    static int i = 1;
+                    return i++;
+                };
+        std::generate(v.begin(), v.end(), f);
+        v.push_back(16);
+        v.push_back(32);
+        std::for_each(v.begin(), v.end(), [nOfFrames](auto& n)
+            {
+                std::cout << "Running multi-threaded with " << n << (n == 1 ? " slave\n" : " slaves\n");
+                multiThreadProcessing(n, nOfFrames);
+            });
+
         return 0;
     }
 }

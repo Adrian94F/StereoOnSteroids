@@ -103,7 +103,12 @@ void Timer::countMeanTimes()
     {
         meanTimesOfOperations_[k.first] =
                 std::accumulate(k.second.begin(), k.second.end(), 0.0) / double(k.second.size()) * 1000.0;
-        meanTimesOfOperations_[EOperation::SUM] += meanTimesOfOperations_[k.first];
+        if (k.first != EOperation::PREPARING_TASKS &&
+            k.first != EOperation::MULTI_THREAD_DISPARITY_MAP_GENERATION &&
+            k.first != EOperation::MERGING_RESULTS)
+        {
+            meanTimesOfOperations_[EOperation::SUM] += meanTimesOfOperations_[k.first];
+        }
     }
 }
 
@@ -122,6 +127,8 @@ void Timer::printStatistics(boost::optional<int> n)
         std::cout <<"single-threaded version\n";
     }
 
+    auto sum = meanTimesOfOperations_[EOperation::SUM];
+
     for (const auto& k : meanTimesOfOperations_)
     {
         switch (k.first)
@@ -136,13 +143,13 @@ void Timer::printStatistics(boost::optional<int> n)
                 std::cout << "Disparity:                 ";
                 break;
             case PREPARING_TASKS:
-                std::cout << "Preparing tasks:           ";
+                std::cout << "  Preparing tasks:         ";
                 break;
             case MULTI_THREAD_DISPARITY_MAP_GENERATION:
-                std::cout << "Partial disparity:         ";
+                std::cout << "  Partial disparity:       ";
                 break;
             case MERGING_RESULTS:
-                std::cout << "Merging results:           ";
+                std::cout << "  Merging results:         ";
                 break;
             case DISPLAYING:
                 std::cout << "Displaying:                ";
@@ -154,8 +161,10 @@ void Timer::printStatistics(boost::optional<int> n)
                 std::cout << "Sum:                       ";
                 break;
         }
-        cout << std::fixed << setprecision(10);
-        std::cout << setw(14) << k.second << " ms" << std::endl;
+        auto value = k.second;
+        auto percent = value / sum * 100;
+        cout << std::fixed << setprecision(3) << setw(7) << value << " ms (";
+        cout << std::fixed << setprecision(2) << setw(6) << percent << "%)\n";
     }
     std::cout << std::endl;
 }

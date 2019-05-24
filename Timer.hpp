@@ -36,14 +36,14 @@ public:
     };
     enum EOperation
     {
-        CV_WAIT_KEY = 0,
-        GETTING_IMAGES,
+        GETTING_IMAGES = 0,
         UNDISTORTION,
         PREPARING_TASKS,
         MULTI_THREAD_DISPARITY_MAP_GENERATION,
         MERGING_RESULTS,
         DISPARITY_MAP_GENERATION,
         DISPLAYING,
+        CV_WAIT_KEY,
         SUM
     };
     Timer() = default;
