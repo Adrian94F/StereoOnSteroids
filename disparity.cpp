@@ -43,6 +43,7 @@ void singleThreadProcessing(int nOfFrames = -1)
     DisparityMapCalculator dmc;
     Timer timer(Timer::EMode::SINGLETHREADED);
     auto counter = 0;
+    Mat map;
     timer.reset();
     do
     {
@@ -52,12 +53,14 @@ void singleThreadProcessing(int nOfFrames = -1)
         timer.measure(Timer::EMeasure::GOT_IMAGES);
         ic.undistortRectify(mats);
         timer.measure(Timer::EMeasure::UNDISTORTED);
-        Mat map = dmc.getMap(mats.left, mats.right);
+        map = dmc.getMap(mats.left, mats.right);
         timer.measure(Timer::EMeasure::DISPARITY_MAP_GENERATED);
         imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", map);
         timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
-    } while(waitKey(30) != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
+    } while(waitKey() != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
+
+    cv::imwrite("../singlethread.png", map);
     timer.printStatistics();
 }
 
@@ -69,6 +72,7 @@ void masterTask(int nOfTasks, int nOfFrames = -1)
     Timer timer(Timer::EMode::MULTITHREADED);
 
     DisparityMapCalculator dmc;
+    cv::Mat disparityMap;
 
     auto counter = 0;
     timer.reset();
@@ -87,7 +91,6 @@ void masterTask(int nOfTasks, int nOfFrames = -1)
         // divide into parts for each slave
         auto width = mats.left.cols;
         auto height = mats.left.rows / nOfTasks;
-        cv::Mat disparityMap;
 
         for (auto i = 0; i < tasksToDo.size(); i++)
         {
@@ -135,7 +138,9 @@ void masterTask(int nOfTasks, int nOfFrames = -1)
         imshow("Cameras (scale 0.5)", ICameras::resizeAndConcat(mats.left, mats.right));
         imshow("Disparity", disparityMap);
         timer.measure(Timer::EMeasure::DISPLAYED_RESULTS);
-    } while(waitKey(30) != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
+    } while(waitKey() != 27 && (nOfFrames == -1 || counter++ < nOfFrames));
+
+    cv::imwrite("../multithread_" + to_string(nOfTasks) + ".png", disparityMap);
 
     // stop threads
     std::for_each(tasksToDo.begin(), tasksToDo.end(),
@@ -236,15 +241,13 @@ int main(int argc, char const *argv[])
         std::cout << "Running single-threaded\n";
         singleThreadProcessing(nOfFrames);
 
-        std::vector<int> v(8);
+        std::vector<int> v(20);
         auto f = []()
                 {
                     static int i = 1;
                     return i++;
                 };
         std::generate(v.begin(), v.end(), f);
-        v.push_back(16);
-        v.push_back(32);
         std::for_each(v.begin(), v.end(), [nOfFrames](auto& n)
             {
                 std::cout << "Running multi-threaded with " << n << (n == 1 ? " slave\n" : " slaves\n");
