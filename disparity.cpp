@@ -1,5 +1,6 @@
 #include <condition_variable>
 #include <mutex>
+#include <opencv2/imgcodecs.hpp>
 #include <opencv2/ximgproc.hpp>
 #include <thread>
 
