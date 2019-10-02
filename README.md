@@ -19,17 +19,17 @@ Output images with suffix "old" will appear.
 Generate disparity map by running `./disparity`. It creates disparity map of live images from cameras and shows
 
 <p align="center">
-  <img src="./doc/screen1.png" width="500px")/>
+  <img src="./doc/img/screen1.png" width="500px")/>
   <br/>Example images from cameras with generated disparity map.
 </p>
 
 <p align="center">
-  <img src="./doc/multi_2_wo_correction_result.png" width="500px")/>
+  <img src="./doc/img/multi_2_wo_correction_result.png" width="500px")/>
   <br/>Example images with multithreaded generated disparity map.
 </p>
 
 <p align="center">
-  <img src="./doc/multi_2_w_correction_result.png" width="500px")/>
+  <img src="./doc/img/multi_2_w_correction_result.png" width="500px")/>
   <br/>Example images with multithreaded generated disparity map (using black borders correction).
 </p>
 
